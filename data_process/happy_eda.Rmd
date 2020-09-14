@@ -1,0 +1,74 @@
+---
+title: "Untitled"
+author: "tu"
+date: "9/9/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## data https://www.kaggle.com/mathurinache/world-happiness-report?select=2020.csv
+```{r}
+library(tidyverse)
+library(explore)
+library(ggbeeswarm)
+library(countrycode)
+```
+
+```{r}
+#explore(happy_2020)
+```
+
+```{r}
+head(happy_2020)
+```
+What do each country look like when it coems to 
+```{r}
+#Adjusted Log Transformation
+adjusted  <- function(x) {
+  log10(1 + x + 0.24691035)
+}
+```
+
+```{r}
+wide_data <- 
+  happy_2020 %>% 
+  select(1:3, 7:12) %>% 
+ # mutate(countrycode = countrycode(`Country name`, origin = 'country.name', destination = 'iso3c')) %>% 
+  left_join(
+    ## employment data https://worldpopulationreview.com/country-rankings/unemployment-by-country
+    employment %>% 
+      transmute(
+        population = pop2020,
+        `Employment rate` = 100 - unemploymentRate,
+        country,
+      ),
+    by = c('Country name' = 'country')
+  ) %>% 
+  #janitor::clean_names() %>% 
+  replace_na(list(population = 0, `Employment rate` = 0)) %>% 
+  mutate(Generosity = adjusted(Generosity))
+  
+
+wide_data[wide_data$`Country name` =="Taiwan Province of China", "population"] <- 23574
+wide_data[wide_data$`Country name` =="Taiwan Province of China", "Employment rate"] <- 96.33
+```
+##wdi data https://datacatalog.worldbank.org/dataset/world-development-indicators
+```{r}
+write_csv(wide_data, "wide_data.csv")
+```
+
+```{r}
+long_date <- 
+wide_data %>% 
+  pivot_longer(
+    cols = ladder_score : employment_rate,
+    names_to = "Metrics",
+    values_to = "Values"
+  )
+```
+
+
+

@@ -1,0 +1,221 @@
+---
+title: "Untitled"
+author: "tu"
+date: "9/12/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(scipen=999)
+```
+
+```{r}
+library(tidyverse)
+library(cowplot)
+library(treemapify)
+library(ragg)
+library(colorspace)
+library(countrycode)
+library(ggflags)
+library(showtext)
+
+font_add_google("Roboto", "Roboto")
+theme_set(theme_minimal(base_family = "serif"))
+
+```
+
+
+```{r}
+wide_data[wide_data$`Country name` =="Taiwan Province of China", "Country name"] <- "Taiwan, China"
+key_country <- c('Brazil', 'China', 'India', 'Japan','Russia','Taiwan, China', 'United States')
+```
+
+## Longevity
+
+```{r fig.height=5.5, fig.width=12}
+p2 <- 
+wide_data %>% 
+  filter(`Country name` %in% key_country) %>% 
+  mutate(countrycode = tolower(countrycode(`Country name`, origin = 'country.name', destination = 'iso2c')),
+         Max = if_else(max(`Healthy life expectancy`) == `Healthy life expectancy`, "YES", "NO")) %>% 
+  ggplot(
+    aes(
+      `Healthy life expectancy`,
+      reorder(`Country name`, `Healthy life expectancy`)
+    # color = `Country name`
+    )
+  ) +
+  geom_col(
+    aes(
+      fill = Max
+    ),
+    width = 0.2
+  ) +
+  scale_fill_manual(values = c("#9C9697","#FFAD01")) +
+  geom_flag(x = -3, aes(country = countrycode), size = 12) +
+  geom_text(
+    aes(
+      label = round(`Healthy life expectancy`, digits = 1)
+    ),
+    hjust = 0
+  ) +
+  geom_vline(xintercept = 72, linetype="dashed", 
+                color = "#FFAD01", size=1) +
+  theme(
+    axis.text.y = element_text(hjust = -0.08),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    legend.position = "none",
+    text=element_text(size=16,  family="serif"),
+    axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+    axis.title.y=element_blank()
+  )
+ 
+ggsave("p2.pdf", p2,
+  width = 12, height = 12, units = "in", device = cairo_pdf
+)
+```
+```{r}
+top_life <- c('China','Japan','Taiwan Province of China', 'United States')
+```
+
+```{r fig.height=4, fig.width=8}
+p1 <- 
+wide_data %>% 
+  filter(`Country name` %in% key_country) %>% 
+  mutate(countrycode = tolower(countrycode(`Country name`, origin = 'country.name', destination = 'iso2c'))) %>% 
+  ggplot(
+    aes(
+      `Freedom to make life choices`,
+      `Employment rate`
+    # color = `Country name`
+    )
+  ) +
+    geom_segment(
+    aes(
+      x=`Freedom to make life choices`, xend=`Freedom to make life choices`, y=0, yend=`Employment rate`
+      ), 
+    color="grey",
+    linetype = "dashed"
+    ) +
+  geom_flag(aes(country = countrycode, size = `Logged GDP per capita`)) +
+
+  scale_size_continuous(range = c(5, 12)) +
+  scale_y_continuous(limits = c(0,100)) + 
+  scale_x_continuous(limits = c(0.7,0.9), breaks = c(0.73,0.77,0.80,0.81,0.84,0.88,0.90)) +
+  ggExtra::removeGridX() +
+  theme(
+    # legend.position = "none",
+    axis.ticks.x=element_blank(),
+  axis.text.x = element_text(vjust = 0)
+  ) +
+  labs(
+    title = "How do freedom to make life choices vary as employment rates slightly fluctuate?",
+    caption = "Data by World Happiness Report"
+  )
+ggsave("p1.pdf", p1,
+  width = 8, height = 5, units = "in", device = cairo_pdf
+)
+  
+```
+
+```{r}
+data <- 
+wide_data %>% 
+  filter(`Country name` %in% key_country) %>% 
+  pivot_longer(
+    cols = `Ladder score` : `Employment rate`,
+    names_to = "Metrics",
+    values_to = "Values"
+  ) %>%
+  select(-`Regional indicator`) %>% 
+  group_by(Metrics) %>% 
+  mutate(Max = if_else(max(Values) == Values, "YES", "NO"),
+         countrycode = countrycode(`Country name`, origin = 'country.name', destination = 'iso2c'))
+
+```
+```{r}
+plot_data <- 
+  data %>% 
+  group_by(Metrics) %>% 
+  summarise(total = sum(Values)) %>% 
+  ungroup() %>% 
+  full_join(data) %>% 
+  group_by(Metrics, `Country name`) %>%
+  mutate(rel = Values/total) %>%
+  mutate(rel = cut(rel, breaks = seq(0, 1, by = .1))) %>%
+  mutate(`Country name` = fct_reorder(`Country name`, Values))
+plot_data
+```
+
+```{r}
+wide_data %>% 
+  filter(`Country name` %in% key_country) %>%
+  select(`Freedom to make life choices`) %>% 
+  arrange(`Freedom to make life choices`) %>% 
+  pull() %>% 
+  round(digits = 2)
+  
+```
+
+
+
+# treemap
+
+```{r fig.height=12, fig.width=12, warning=FALSE}
+p <- 
+plot_data %>% 
+ggplot(aes(
+  #this must be Values
+        area = Values, 
+        fill = Max, 
+        subgroup = Metrics
+      )) +
+      geom_treemap(
+        aes(alpha = rel),
+        color = "white"
+      ) +
+  scale_fill_manual(values = c("#9C9697","#FFAD01")) +
+  facet_wrap(vars(Metrics)) +
+  
+   guides(alpha = guide_legend(override.aes = list(fill = "#7F3C8D"))) +
+   geom_treemap_text(
+      aes(
+        label = `Country name`, 
+        colour = Max,
+        colour = after_scale(darken(colour, .9, space = "HLS")),
+        alpha = rel
+      ),
+      family = "Staatliches", 
+      place = "topleft", 
+      grow = TRUE
+    ) +
+  scale_color_manual(values = c("#9C9697","#FFAD01")) +
+    geom_treemap_subgroup_text(
+      family = "Oswald SemiBold", 
+      fontface = "italic",
+      color = "white", 
+      alpha = .9, 
+      size = 16, 
+      place = "bottomleft",
+      grow = F
+    ) +
+  scale_alpha_discrete(breaks = seq(.05, 1, length.out = 10))+
+  
+  theme(
+  legend.position = "none",
+  strip.text = element_blank(),
+  panel.spacing = unit(.75, "lines"),
+  plot.margin = margin(rep(7, 4))
+) 
+ 
+```
+```{r}
+ggsave("p.pdf", p,
+  width = 12, height = 12, units = "in", device = cairo_pdf
+)
+```
+

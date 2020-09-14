@@ -1,0 +1,192 @@
+body {
+    /*overflow: hidden;*/
+    margin: 0;
+    font-size: 14px;
+    font-family: "Helvetica Neue", Helvetica;
+}
+
+div.tooltip {
+    position: absolute;
+    top: 100px;
+    left: 100px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    border: 2px solid #000;
+    background: #fff;
+    opacity: .9;
+    color: black;
+    padding: 10px;
+    width: 300px;
+    font-size: 12px;
+    z-index: 10;
+}
+
+div.tooltip .title {
+    font-size: 13px;
+}
+
+div.tooltip .name {
+    font-weight: bold;
+}
+
+
+
+#footer {
+    position: absolute;
+    top: 0;
+    z-index: 1;
+    display: block;
+    font-size: 30px;
+    font-weight: 300;
+    text-shadow: 0 1px 0 #fff;
+    top: 30px;
+    left: 30px;
+    text-align: left;
+}
+
+#owner {
+    position: absolute;
+    z-index: 1;
+    display: block;
+    font-weight: 300;
+    text-shadow: 0 1px 0 #fff;
+    top: 500px;
+    left: 30px;
+    text-align: left;
+    color: #474747;
+    padding-bottom: 20px;
+    font-size: 10px;
+}
+
+#SideText {
+    font-family: "Helvetica Neue", Helvetica;
+    position: absolute;
+    display: block;
+    font-size: 12px;
+    color: #474747;
+    top: 190px;
+    left: 65px;
+    width: 800px;
+    font-weight: 300;
+    text-shadow: 0 1px 0 #fff;
+}
+
+#BelowLeftText {
+    position: absolute;
+    font-size: 14px;
+    color: #474747;
+    top: 340px;
+    left: 50px;
+    width: 110px;
+    text-align: center;
+    font-weight: 500;
+    text-shadow: 0 1px 0 #fff;
+}
+
+
+#BelowRightText {
+    position: absolute;
+    font-size: 14px;
+    color: #474747;
+    top: 340px;
+    left: 780px;
+    width: 110px;
+    text-align: center;
+    font-weight: 500;
+    text-shadow: 0 1px 0 #fff;
+}
+
+line {
+    stroke: #000;
+    stroke-width: 1.px;
+}
+
+.hint {
+    position: absolute;
+    left: 0;
+    width: 900px;
+    font-size: 12px;
+    color: #999;
+}
+
+text {
+    font-size: 10px;
+}
+
+.titles {
+    font-size: 14px;
+}
+
+.annotate {
+    font-size: 11px;
+    fill: #474747;
+}
+
+path.chord {
+    fill-opacity: .80;
+}
+
+.pTitle {
+    font-size: 16px;
+    text-shadow: 0 1px 0 #fff;
+    fill: #474747;
+    font-weight: bold;
+}
+
+.survey {
+    font-size: 10px;
+}
+
+#buttons {
+    position: absolute;
+    top: 140px;
+    left: 30px;
+    display: inline-block;
+    padding: 0.35em 1.2em;
+    border: 0.1em solid #FFFFFF;
+    margin: 0 0.3em 0.3em 0;
+    border-radius: 0.12em;
+    box-sizing: border-box;
+    text-align: center;
+    transition: all 0.2s;
+}
+
+
+#chart {
+    position: absolute;
+    top: 250px;
+    left: 90px;
+    display: inline-block;
+    padding: 0.35em 1.2em;
+    margin: 0 0.3em 0.3em 0;
+    border-radius: 0.12em;
+    box-sizing: border-box;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+#prettytooltip {
+    position: absolute;
+    width: 200px;
+    height: auto;
+    padding: 10px;
+    background-color: white;
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    border-radius: 10px;
+    -webkit-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+    -moz-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+    box-shadow: 4px 4px 10px rgba(0, 100, 100, 0.4);
+    pointer-events: none;
+}
+
+#prettytooltip.hidden {
+    display: none;
+}
+
+#prettytooltip p {
+    margin: 0;
+    font-family: sans-serif;
+    font-size: 16px;
+    line-height: 20px;
+}
